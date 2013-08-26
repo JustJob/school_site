@@ -1,0 +1,22 @@
+td.puzzle_cell {
+  width:32px;
+  height:32px;
+}
+
+.black_cell {
+  background-color:black;
+}
+
+.lit_cell {
+  background-color:#FFFF66; 
+}
+
+.cell_number {
+  color:white;
+  text-align: center;
+}
+
+.bulb {
+  background-image:url('bulb.png');
+  background-size:32px;
+}
