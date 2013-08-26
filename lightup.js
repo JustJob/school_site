@@ -1,5 +1,6 @@
 $(document).ready(function() {
   var input = ''
+  var height, width;
 
   var checkInput = function() {
     return input && input != '';
@@ -7,9 +8,10 @@ $(document).ready(function() {
 
   var drawPuzzle = function() {
     var formatInput = input.split('\n');
-    var width = parseInt(formatInput[0]);
-    var height = parseInt(formatInput[1]);
     var puzzle = $('#puzzle');
+
+    width = parseInt(formatInput[0]);
+    height = parseInt(formatInput[1]);
 
     puzzle.empty();
     for(var i = 0; i < height; i++) {
@@ -26,6 +28,10 @@ $(document).ready(function() {
     addBlackCells(formatInput);
     addBulbs();
     addLitCells();
+
+    $('.puzzle_cell').click(function(evt) {
+      addBulb($(evt.target));
+    });
   }
 
   var addBlackCells = function(formatInput) {
@@ -59,25 +65,47 @@ $(document).ready(function() {
     }
   };
 
-  var addLitCells = function(height, width) {
+  var addBulb = function(elem) {
+    if(!elem.hasClass('black_cell')) {
+      if(elem.hasClass('bulb')) {
+        elem.removeClass('bulb');
+        clearLitCells();
+      } else {
+        elem.addClass('bulb');
+      }
+      addLitCells();
+    }
+  }
+
+  var addLitCells = function() {
     var x,y;
     $('.bulb').each(function(idx, bulb) {
       x = parseInt($(bulb).attr('col'));
       y = parseInt($(bulb).parent().attr('row'));
       lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x+1, y:p_y }; });
       lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x-1, y:p_y }; });
-      lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x,   y:p_y+1 }; });
-      lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x,   y:p_y-1 }; });
+      lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x, y:p_y+1 }; });
+      lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x, y:p_y-1 }; });
     });
+  }
+
+  var clearLitCells = function() {
+    var cell;
+    for(var x = 1; x <= width; x++) {
+      for(var y = 1; y <= height; y++) {
+        cell = getCell(x,y);
+        cell.removeClass('lit_cell');
+      }
+    }
   }
 
   var lightCellIfValid = function(x, y) {
     var cell = getCell(x,y);
-    if(cell && cell.hasClass('black_cell')) {
-      return false;
-    } else {
+    if(cell && !cell.hasClass('black_cell')) {
       cell.addClass('lit_cell');
       return true;
+    } else {
+      return false;
     }
   }
 
@@ -90,7 +118,7 @@ $(document).ready(function() {
 
   var getCell = function(x, y) {
     var cell = $('[row=' + y + '] [col=' + x + ']');
-    return cell == [] ? undefined : cell;
+    return !cell || cell.length == 0 ? undefined : cell;
   };
 
   $('#submit_light_up').click(function() {
