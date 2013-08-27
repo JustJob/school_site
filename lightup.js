@@ -32,21 +32,23 @@ $(document).ready(function() {
     $('.puzzle_cell').click(function(evt) {
       addBulb($(evt.target));
     });
-  }
+  };
 
   var addBlackCells = function(formatInput) {
     var lineFormat, x, y, adjacentNum, i, cell;
 
     for(i = 2; i < formatInput.length; i++) {
       lineFormat = formatInput[i].split(' ');
-      x = lineFormat[0];
-      y = lineFormat[1];
-      adjacentNum = lineFormat[2];
+      if(lineFormat.length == 3) {
+        x = lineFormat[0];
+        y = lineFormat[1];
+        adjacentNum = lineFormat[2];
 
-      cell = getCell(x,y);
-      cell.addClass('black_cell');
-      if(adjacentNum != 5) {
-        cell.append('<p class="cell_number">' + adjacentNum + '</p>');
+        cell = getCell(x,y);
+        cell.addClass('black_cell');
+        if(adjacentNum != 5) {
+          cell.append('<p class="cell_number">' + adjacentNum + '</p>');
+        }
       }
     }
   };
@@ -57,11 +59,13 @@ $(document).ready(function() {
     solution = $('#light_up_output').val().split('\n');
     for(var i = 1; i < solution.length; i++) {
       lineFormat = solution[i].split(' ');
-      x = lineFormat[0];
-      y = lineFormat[1];
+      if(lineFormat.length == 2) {
+        x = lineFormat[0];
+        y = lineFormat[1];
 
-      cell = getCell(x,y);
-      cell.addClass('bulb');
+        cell = getCell(x,y);
+        cell.addClass('bulb');
+      }
     }
   };
 
@@ -75,19 +79,23 @@ $(document).ready(function() {
       }
       addLitCells();
     }
-  }
+  };
 
   var addLitCells = function() {
-    var x,y;
+    var xyPair;
     $('.bulb').each(function(idx, bulb) {
-      x = parseInt($(bulb).attr('col'));
-      y = parseInt($(bulb).parent().attr('row'));
-      lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x+1, y:p_y }; });
-      lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x-1, y:p_y }; });
-      lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x, y:p_y+1 }; });
-      lightCellsFromIter(x, y, function(p_x, p_y) { return {x:p_x, y:p_y-1 }; });
+      xyPair = getXYFromBulb($(bulb));
+      lightCellsFromIter(xyPair, function(p_xyPair) { return {x:p_xyPair.x+1, y:p_xyPair.y }; });
+      lightCellsFromIter(xyPair, function(p_xyPair) { return {x:p_xyPair.x-1, y:p_xyPair.y }; });
+      lightCellsFromIter(xyPair, function(p_xyPair) { return {x:p_xyPair.x, y:p_xyPair.y+1 }; });
+      lightCellsFromIter(xyPair, function(p_xyPair) { return {x:p_xyPair.x, y:p_xyPair.y-1 }; });
     });
-  }
+  };
+
+  var getXYFromBulb = function(elem) {
+    return { x:parseInt(elem.attr('col')),
+             y:parseInt(elem.parent().attr('row')) };
+  };
 
   var clearLitCells = function() {
     var cell;
@@ -97,7 +105,7 @@ $(document).ready(function() {
         cell.removeClass('lit_cell');
       }
     }
-  }
+  };
 
   var lightCellIfValid = function(x, y) {
     var cell = getCell(x,y);
@@ -107,14 +115,14 @@ $(document).ready(function() {
     } else {
       return false;
     }
-  }
+  };
 
-  var lightCellsFromIter = function(x, y, iter) {
-    if(lightCellIfValid(x,y)) {
-      var xyPair = iter(x,y);
-      lightCellsFromIter(xyPair.x, xyPair.y, iter);
+  var lightCellsFromIter = function(xyPair, iter) {
+    if(lightCellIfValid(xyPair.x, xyPair.y)) {
+      xyPair = iter(xyPair);
+      lightCellsFromIter(xyPair, iter);
     }
-  }
+  };
 
   var getCell = function(x, y) {
     var cell = $('[row=' + y + '] [col=' + x + ']');
